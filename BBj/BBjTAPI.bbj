@@ -1,0 +1,173 @@
+class public BBjTAPIClient
+
+    field private BBjString CallbackMethod$
+    field private Object CallbackObject!
+
+    method public static void makeCall(BBjString extension$, BBjString number$)
+        Ns! = BBjAPI().getNamespace("TAPI","Server",1)
+        Ns!.setValue("O"+extension$,number$)
+    methodend
+
+    method public void setCallbackForIncomingCall(BBjString extension$, BBjString label$)
+        #CallbackMethod$ = label$
+        #CallbackObject! = null()
+        Ns! = BBjAPI().getNamespace("TAPI","Server",1)
+        Ns!.setCallbackForVariable("I"+extension$,#this!,"onIncomingCall")
+        BBjAPI().setCustomEventCallback("TAPIIncomingCall",label$)
+    methodend
+
+    method public void setCallbackForIncomingCall(BBjString extension$, Object o!, BBjString method$)
+        #CallbackMethod$ = method$
+        #CallbackObject! = o!
+        Ns! = BBjAPI().getNamespace("TAPI","Server",1)
+        Ns!.setCallbackForVariable("I"+extension$,#this!,"onIncomingCall")
+    methodend
+
+    method public void onIncomingCall(BBjNamespaceEvent ev!)
+        if #CallbackObject! = null() then
+            BBjAPI().postPriorityCustomEvent("TAPIIncomingCall",ev!.getNewValue())
+        else
+            dummy$=stbl("!OPTIONS","EXECUTE_CALLED_PROGRAM=TRUE")
+            o! = #CallbackObject!
+            p! = payload!
+            x$="o!."+#CallbackMethod$+"("""+ev!.getNewValue()+""")"
+
+REM see https://bugzilla.basis.com/show_bug.cgi?id=28270
+REM Bug 28270 - program drops to console after EXECUTE when called from a method that had been invoked using another EXECUTE 
+REM             execute x$
+REM do the old (slower) way until there's a fix for this edge condition:
+
+            temp$ = str(java.io.File.createTempFile("blabla", ".call"))
+            ch=unt
+            open (ch)temp$
+            write (ch)"ENTER"+$0a$+x$+$0a$+"EXIT"+$0a$
+            close (ch)
+            call temp$
+            erase temp$
+        fi
+    methodend
+
+classend
+
+
+class public BBjTAPIServerData
+
+    field private java.util.HashMap Socket2Ext! = new java.util.HashMap()
+    field private java.util.HashMap Ext2Socket! = new java.util.HashMap()
+    field private java.util.HashMap OutboundCallQueue! = new java.util.HashMap()
+    field private BBjNamespace Ns!
+
+
+    method  public BBjTAPIServerData()
+        #Ns! = BBjAPI().getNamespace("TAPI","Server",1)
+        #Ns!.setCallbackForNamespace(#this!,"onNamespace")
+    methodend
+
+    method public void parse(BBjString sock$, BBjString cmd$)
+        if len(cmd$)>4 AND cmd$(1,4)="REG:" then
+            #register(sock$,cmd$(5))
+        fi
+        if len(cmd$)>5 and cmd$(1,5)="CALL:" then
+            #reportIncomingCall(sock$,cmd$(6))
+        fi
+    methodend
+
+    method private void register(BBjString sock$, BBjString ext$)
+        rem first remove old sock for same extension
+        sock!=#Ext2Socket!.get(ext$)
+
+        if (sock!<>null()) then
+            #Socket2Ext!.remove(str(sock!))
+            #Ext2Socket!.remove(ext$)
+            #Ns!.removeValue("I"+ext$,err=*next)
+            #Ns!.removeValue("O"+ext$,err=*next)
+        fi
+
+        ext!=#Socket2Ext!.get(sock$)
+        if (ext!<>null()) then
+            ext$=str(ext!)
+            #Ext2Socket!.remove(ext$)
+            #Socket2Ext!.remove(sock$)
+            #Ns!.removeValue("I"+ext$)
+            #Ns!.removeValue("O"+ext$)
+        fi
+
+        #Ext2Socket!.put(ext$,sock$)
+        #Socket2Ext!.put(sock$,ext$)
+
+
+        print "register extension "+ext$+" from "+sock$
+
+
+    methodend
+
+    method private void reportIncomingCall(BBjString sock$, BBjString number$)
+        ext!=#Socket2Ext!.get(sock$)
+        if ext!<>null() then
+            ext$=str(ext!)
+            print "incoming call for extension "+ext$+" from "+number$
+            #Ns!.setValue("I"+ext$,number$)
+        fi
+    methodend
+
+    method public void dump()
+        print #Socket2Ext!
+        print #Ext2Socket!
+    methodend
+
+    method public void onNamespace(BBjNamespaceEvent ev!)
+        v$=ev!.getVariableName()
+        if v$(1,1)="O" then
+            #OutboundCallQueue!.put(v$(2),ev!.getNewValue())
+        fi
+    methodend
+
+    method public Boolean hasOutboundCallsPending()
+        methodret #OutboundCallQueue!.size()>0
+    methodend
+
+    method public void writeOutboundCallsToSocket(BBjNumber ch)
+        it!=#OutboundCallQueue!.keySet().iterator()
+        while it!.hasNext()
+            k$      = it!.next()
+            number$ = #OutboundCallQueue!.get(k$)
+            socket!=#Ext2Socket!.get(k$)
+            if socket! <> null() then
+                print (ch,err=*next,key=str(socket!))"OUTCALL:"+number$
+                print "makint outbound call on extension "+k$+" to "+number$
+            fi
+        wend
+        #OutboundCallQueue!.clear()
+    methodend
+
+
+classend
+
+t! = new BBjTAPIServerData()
+BBjAPI().setCustomEventCallback("INTERRUPT","NOOP")
+OPEN (1,MODE="port=12000")"N0"
+
+loop:
+
+    READ (1,tim=1,err=trap)X$
+    if x$="" then
+        goto LOOP
+    fi
+    K$=key(1)
+
+    t!.parse(k$,x$)
+
+goto loop
+
+trap:
+    if err<>0 then
+        goto loop
+    fi
+
+        BBjAPI().postCustomEvent("INTERRUPT","")
+        process_events,err=*next
+        if t!.hasOutboundCallsPending() then
+            t!.writeOutboundCallsToSocket(1)
+        fi
+
+goto loop

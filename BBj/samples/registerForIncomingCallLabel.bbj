@@ -1,0 +1,15 @@
+
+use ::../BBjTAPI.bbj::BBjTAPIClient 
+
+declare BBjTAPIClient t!
+t! = new BBjTAPIClient()
+
+rem setCallbackForIncomingCall(extension, label)
+t!.setCallbackForIncomingCall("230","incomingCall") 
+
+process_events
+
+incomingCall:
+    ev! = BBjAPI().getLastEvent()
+    a=msgbox("Call from Number: "+ev!.getObject(),0,"procedure callback")  
+return

@@ -1,0 +1,4 @@
+use ::../BBjTAPI.bbj::BBjTAPIClient 
+
+rem makeCall(extension, number)
+BBjTAPIClient.makeCall("230","06819681423")

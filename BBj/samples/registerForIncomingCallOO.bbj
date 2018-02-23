@@ -1,0 +1,20 @@
+
+use ::../BBjTAPI.bbj::BBjTAPIClient 
+
+declare BBjTAPIClient t!
+t! = new BBjTAPIClient()
+
+helper! = new helper()
+
+rem setCallbackForIncomingCall(extenstion, object, method)
+t!.setCallbackForIncomingCall("230",helper!,"onIncomingCall")
+
+
+process_events
+
+
+class public helper
+    method public void onIncomingCall(BBjString Number$)
+        a=msgbox("Call from Number: "+Number$,0,"object callback")
+    methodend
+classend
