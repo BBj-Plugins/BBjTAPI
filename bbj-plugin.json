@@ -1,6 +1,6 @@
 {
     "name":"BBjTAPI",
-    "description":"The BBjTAPI plugin",
+    "description":"BBjTAPI allows an integration with Windows TAPI.",
     "version":"1.00",
     "author":"Basis"
 }
