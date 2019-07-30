@@ -1,0 +1,98 @@
+﻿<Page x:Class="BBjTapiClient.pages.binding"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:BBjTapiClient.pages"
+      xmlns:project="clr-namespace:BBjTapiClient"
+      mc:Ignorable="d" 
+      d:DesignHeight="300" d:DesignWidth="300"
+      Title="binding" Loaded="Page_Loaded">
+    <Page.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary 
+                  Source="../StyleDictionary.xaml">
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Page.Resources>
+
+    <Page.Triggers>
+        <EventTrigger RoutedEvent="Page.Loaded">
+            <BeginStoryboard>
+                <Storyboard>
+                    <DoubleAnimation Storyboard.TargetName="rootContainer" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.7" FillBehavior="Stop" />
+                </Storyboard>
+            </BeginStoryboard>
+            <BeginStoryboard Storyboard="{StaticResource Storyboard_x_movement}"/>
+        </EventTrigger>
+    </Page.Triggers>
+
+    <StackPanel Orientation="Vertical" x:Name="rootContainer">
+        <StackPanel.RenderTransform>
+            <TransformGroup>
+                <TranslateTransform/>
+            </TransformGroup>
+        </StackPanel.RenderTransform>
+        <UniformGrid Columns="2" Rows="1">
+            <GroupBox Grid.Row="0" Grid.Column="0" Header="Connection">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Row="0" Grid.Column="0">Server</Label>
+                    <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Source={x:Static project:App.Setup}, Path=Server}" LostFocus="TextBox_LostFocus"></TextBox>
+                    <Label Grid.Row="1" Grid.Column="0">Port</Label>
+                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Source={x:Static project:App.Setup}, Path=Port}" LostFocus="TextBox_LostFocus_1"></TextBox>
+                    <CheckBox Grid.Row="2" Grid.Column="1" IsEnabled="False" IsChecked="{Binding Source={x:Static project:App.Setup}, Path=IsNetworkConnectionEstablished}" Content="is connected"></CheckBox>
+                </Grid>
+            </GroupBox>
+            <GroupBox Grid.Row="0" Grid.Column="1" Header="Collaboration">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Row="0" Grid.Column="0">Extension</Label>
+                    <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Source={x:Static project:App.Setup}, Path=Extension}" LostFocus="TextBox_LostFocus_2"></TextBox>
+                    <CheckBox Grid.Row="1" Grid.Column="1" IsEnabled="False" IsChecked="{Binding Source={x:Static project:App.Setup}, Path=IsExtensionRegistered}" Content="is registered"></CheckBox>
+                </Grid>
+            </GroupBox>
+        </UniformGrid>
+        <GroupBox Header="TAPI">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+
+                <Label Grid.Row="0" Grid.Column="0">Line/Device</Label>
+                <ComboBox Grid.Row="0" Grid.Column="1" x:FieldModifier="public" x:Name="Lines" ItemsSource="{Binding Lines, Source={x:Static project:App.Setup}, Mode=TwoWay}" SelectionChanged="ComboBox_SelectionChanged"></ComboBox>
+                <!--<TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Source={x:Static project:App.Setup}, Path=Device}"></TextBox>-->
+                
+                <Label Grid.Row="1" Grid.Column="0">Address</Label>
+                <ComboBox Grid.Row="1" Grid.Column="1" x:FieldModifier="public" x:Name="Addresses" ItemsSource="{Binding Addresses, Source={x:Static project:App.Setup}, Mode=TwoWay}" SelectionChanged="ComboBox_SelectionChanged_1"></ComboBox>
+                <!--<TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Source={x:Static project:App.Setup}, Path=Address}"></TextBox>-->
+
+                <CheckBox Grid.Row="2" Grid.Column="1" IsEnabled="False" IsChecked="{Binding IsTapiSessionConnected, Source={x:Static project:App.Setup}}" Content="is connected"></CheckBox>
+            </Grid>
+        </GroupBox>
+    </StackPanel>
+
+</Page>
