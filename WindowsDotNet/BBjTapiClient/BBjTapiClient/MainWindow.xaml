@@ -1,0 +1,47 @@
+﻿<!-- ATTENTION : The Visibility property is HIDDEN. Change it in order to see the design in the VisualStudio form editor! -->
+<Window Name="mainWin" x:Class="BBjTapiClient.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BBjTapiClient"
+        xmlns:project="clr-namespace:BBjTapiClient"
+        mc:Ignorable="d"
+        Title="" Height="600" Width="800" Closing="mainWin_Closing" Closed="mainWin_Closed" Loaded="mainWin_Loaded" MinWidth="800" MinHeight="600" Visibility="Hidden">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary 
+            		Source="StyleDictionary.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <DockPanel LastChildFill="True">
+        <DockPanel.Background>
+            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                <GradientStop Color="#FFF0F0F0" Offset="0"/>
+                <GradientStop Color="White" Offset="1"/>
+            </LinearGradientBrush>
+        </DockPanel.Background>
+        <!-- toolbar -->
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Left">
+            <!--<Label Foreground="#FFC8C7C7" IsEnabled="False">1.18.50.0</Label>-->
+            <!--<Label Foreground="#FFC8C7C7" Content="{Binding Source={x:Static project:App.Setup}, Path=Version, Mode=OneWay}"></Label>-->
+            <Button Name="btnBinding" Content="Bindings" Click="Button_Click_4" Style="{StaticResource activeButton}"></Button>
+            <Button Name="btnExtras" Content="Extras" Click="Button_Click_3"></Button>
+            <Button Name="btnTerminate" Content="Terminate" Click="BtnTerminate_Click" Visibility="Hidden"></Button>
+            <Button Name="btnMinimize" Content="Minimize" Click="BtnMinimize_Click" Visibility="Hidden"></Button>
+        </StackPanel>
+        <!-- logging -->
+        <Expander DockPanel.Dock="Bottom" Header="Logging">
+            <ListBox DockPanel.Dock="Bottom" Name="logbox" Height="196"/>
+        </Expander>
+        <!-- page placeholder -->
+        <Frame NavigationUIVisibility="Hidden" x:Name="mainFrame">
+        </Frame>
+    </DockPanel>
+
+
+
+</Window>
