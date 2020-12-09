@@ -33,19 +33,25 @@ namespace BBjTapiClient.pages
             InitializeComponent();
         }
 
+        // major LINE/DEVICE SELECTOR 
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!isSuppressLineRefresh)
             {
+                isSuppressAddressRefresh = isSuppressLineRefresh;
                 ComboBox cb = (ComboBox)sender;
                 App.tapi.setCurrentLine((string)cb.SelectedItem);
                 App.isRefreshingTapiSession = true; // impulse for re-connecting
-                Addresses.Text = App.tapi.currentAddress.Address; // refresh the address - mostly the only one available within the TAPI LINE
+                if (App.tapi.currentAddress != null)
+                    Addresses.Text = App.tapi.currentAddress.Address; // refresh the address - mostly the only one available within the TAPI LINE
+                else
+                    App.log($"Unable to fill combo box named 'Adresses'. The TAPI object 'currentAddress' is NULL.");
                 App.Setup.Line = (string)cb.SelectedItem;
             }
             isSuppressLineRefresh = false;
         }
 
+        // minor ADDRESS SELECTOR
         private void ComboBox_SelectionChanged_1(object sender, SelectionChangedEventArgs e)
         {
             if (!isSuppressAddressRefresh)
@@ -66,11 +72,11 @@ namespace BBjTapiClient.pages
             {
                 if (App.Setup.Address != "")
                 {
+                    isSuppressLineRefresh = true;
                     isSuppressAddressRefresh = true;
                     Addresses.Text = App.Setup.Address;
+                    Lines.Text = App.Setup.Line;
                 }
-                isSuppressLineRefresh = true;
-                Lines.Text = App.Setup.Line;
             };
         }
 
