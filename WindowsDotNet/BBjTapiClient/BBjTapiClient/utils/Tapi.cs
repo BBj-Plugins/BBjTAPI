@@ -46,13 +46,15 @@ namespace BBjTapiClient.utils
 
 
         /* is called when main win is loaded */
-        public void init()
+        public void init(bool isInFrontend)
         {
+            App.log($"init(isInFrontEnd={isInFrontend})");
             App.isMgrInitializationPhase = true;
             bool didInitalize = false;
             try
             {
                 didInitalize = mgr.Initialize(); // CRITICAL - will remain in an endless loop, if the windows system CONTROL PANEL is opened and the current bound TAPI DRIVER configuration is opened!
+                App.log($"tapi mgmt initialize state (didInitalize) is '{didInitalize}'");
             }
             catch (Exception ex)
             {
@@ -61,8 +63,11 @@ namespace BBjTapiClient.utils
             App.isMgrInitializationPhase = false;
             if (didInitalize)
             {
-                App.Setup.Lines.Clear();
-                App.Setup.Addresses.Clear();
+                if (isInFrontend)
+                {
+                    App.Setup.Lines.Clear();
+                    App.Setup.Addresses.Clear();
+                }
                 currentLine = null;
                 currentAddress = null;
                 addressCollection = null;
@@ -73,7 +78,8 @@ namespace BBjTapiClient.utils
                 App.log(String.Format("{0}x TSP (Telephony service provider) lines detected", lineCollection.Count()));
                 foreach (TapiLine line in lineCollection)
                 {
-                    App.Setup.Lines.Add(line.Name);
+                    if (isInFrontend)
+                        App.Setup.Lines.Add(line.Name);
                     //line.Changed += Line_Changed;
                     //line.NewCall += Line_NewCall;
                     //line.Ringing += Line_Ringing;
@@ -98,18 +104,29 @@ namespace BBjTapiClient.utils
                 if (allLinesAndAddresses != "")
                     allLinesAndAddresses = allLinesAndAddresses.Substring(1);
 
-                if (App.Setup.Line != "")
-                    setCurrentLine(App.Setup.Line);
-                if (App.Setup.Address != "")
+                if (isInFrontend)
+                {
+                    if (App.Setup.Line != "")
+                        setCurrentLine(App.Setup.Line, isInFrontend);
+                    if (App.Setup.Address != "")
+                        setCurrentAddress(App.Setup.Address);
+                }
+                else
+                {
+                    setCurrentLine(App.Setup.Line, isInFrontend);
                     setCurrentAddress(App.Setup.Address);
+                }
 
                 App.isRefreshingTapiSession = true; // start session
             }
+            else
+                App.log($"tapi mgmt initialize failed");
+            App.isTapiInitRan = true;
         }
 
 
         /* is called when the item in the Device combobox has been changed */
-        public void setCurrentLine(string lineName)
+        public void setCurrentLine(string lineName, bool isFrontend)
         {
             if (lineCollection.Count() > 0)
             {
@@ -126,21 +143,28 @@ namespace BBjTapiClient.utils
                     currentLine.Ringing += Line_Ringing;
                     App.log(String.Format("Selected TAPI line - current line is '{0}'", currentLine.Name));
                     addressCollection = (TapiAddress[])item.Addresses;
-                    App.Setup.Addresses.Clear();
+                    if (isFrontend)
+                        App.Setup.Addresses.Clear();
                     if (addressCollection.Count() == 1)
                     {
                         App.log(String.Format("Selected TAPI line includes one address {0}", addressCollection[0].Address));
-                        App.Setup.Addresses.Clear();
-                        App.Setup.Addresses.Add(addressCollection[0].Address); // refresh Addresses combobox content 
+                        if (isFrontend)
+                        {
+                            App.Setup.Addresses.Clear();
+                            App.Setup.Addresses.Add(addressCollection[0].Address); // refresh Addresses combobox content 
+                        }
                         setCurrentAddress(addressCollection[0].Address);
                     }
                     else
                     {
                         App.log(String.Format("Selected TAPI line includes {0}x addresses", addressCollection.Count()));
-                        App.Setup.Addresses.Clear();
-                        foreach (var address in addressCollection)
+                        if (isFrontend)
                         {
-                            App.Setup.Addresses.Add(address.Address); // refresh Addresses combobox content 
+                            App.Setup.Addresses.Clear();
+                            foreach (var address in addressCollection)
+                            {
+                                App.Setup.Addresses.Add(address.Address); // refresh Addresses combobox content 
+                            }
                         }
                     }
                     App.registry.write("Device", currentLine.Name);
@@ -360,11 +384,21 @@ namespace BBjTapiClient.utils
                         }
                         catch (Exception ex)
                         {
-                            App.log("TAPI address - Unable to drop call. " + ex.Message);
+                            App.log("TAPI address - Unable to drop call. currentOutgoingCall.Drop() Exception : " + ex.Message);
+                            if (ex.InnerException != null)
+                                if (ex.InnerException.Message != null)
+                                    if (ex.InnerException.Message != ex.Message)
+                                        App.log($"TAPI address - currentOutgoingCall.Drop(); Inner Exception : {ex.InnerException.Message}");
                         }
                     }
+                    else
+                        App.log($"TAPI address - currentOutgoingCall.Line.IsOpen is false - can't performing 'drop a call'.");
                 }
+                else
+                    App.log($"TAPI address - currentOutgoingCall.Line is null - can't performing 'drop a call'.");
             }
+            else
+                App.log($"TAPI address - currentOutgoingCall is null - can't performing 'drop a call'.");
         }
 
         /* make outgoing call */
@@ -373,27 +407,55 @@ namespace BBjTapiClient.utils
             App.log("TAPI address - Making outgoing call to '" + plainPhoneNumber + "'");
             if (currentAddress != null)
             {
+                //App.log("TAPI address - Code 2101280742 - okay, currentAddress is not null");
                 if (currentAddress.Address != "")
                 {
+                    //App.log("TAPI address - Code 2101280743 - okay, currentAddress.Address is not empty");
                     if (!App.Setup.CanMakeCall)
                     {
+                        App.log($"TAPI address - App.Setup.CanMakeCall is false - can't perform outgoing call - calling dropCall() now.");
                         dropCall();
                         callNumberAsSoonAsPossible = plainPhoneNumber;
                     }
                     else
                     {
-                        try
+                        //App.log("TAPI address - Code 2101280744 - okay, App.Setup.CanMakeCall is true");
+                        if (currentAddress.Status == null)
+                            App.log("TAPI address - currentAddress.Status is null - can't perform outgoing call");
+                        else
                         {
-                            currentOutgoingCall = currentAddress.MakeCall(plainPhoneNumber);
-                            App.log(String.Format("TAPI address - Made call to '{0}'", plainPhoneNumber));
-                        }
-                        catch (Exception ex)
-                        {
-                            App.log(ex.Message);
+                            //App.log("TAPI address - Code 2101280758 - okay, currentAddress.Status is not null");
+                            bool mayMakeCall = currentAddress.Status.CanMakeCall;
+                            if (!mayMakeCall)
+                                App.log("TAPI address - currentAddress.Status.CanMakeCall is false - can't perform outgoing call");
+                            else
+                            {
+                                //App.log("TAPI address - Code 2101280759 - okay, currentAddress.Status.CanMakeCall is true");
+                                try
+                                {
+                                    //App.log("TAPI address - Code 2101280745 - okay, doing currentOutgoingCall = currentAddress.MakeCall(plainPhoneNumber);");
+                                    var x = currentAddress.Status.CanMakeCall;
+                                    currentOutgoingCall = currentAddress.MakeCall(plainPhoneNumber);
+                                    App.log(String.Format("TAPI address - Made call to '{0}'", plainPhoneNumber));
+                                }
+                                catch (Exception ex)
+                                {
+                                    App.log($"TAPI address - currentAddress.MakeCall('{plainPhoneNumber}'); Exception : {ex.Message}");
+                                    if (ex.InnerException != null)
+                                        if (ex.InnerException.Message != null)
+                                            if (ex.InnerException.Message != ex.Message)
+                                                App.log($"TAPI address - currentAddress.MakeCall('{plainPhoneNumber}'); Inner Exception : {ex.InnerException.Message}");
+                                }
+                            }
                         }
                     }
                 }
+                else
+                    App.log($"TAPI address - currentAddress.Address is empty - can't perform outgoing call");
             }
+            else
+                App.log($"TAPI address - currentAddress is null - can't perform outgoing call");
+
         }
 
 

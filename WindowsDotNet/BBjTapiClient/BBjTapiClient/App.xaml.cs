@@ -13,6 +13,7 @@ using System.Windows;
 using BBjTapiClient.utils;
 using BBjTapiClient.viewmodels;
 using System.Windows.Controls;
+using System.IO;
 
 namespace BBjTapiClient
 {
@@ -27,11 +28,16 @@ namespace BBjTapiClient
         public static bool isPreparationPhase = true;
         public static bool isShuttingDown = false;
         public static bool isRefreshingTapiSession = false;
+        public static bool isTapiInitRan = false;
 
         /* logging */
         public static MainWindow mainWin;
         public static int logCount = 0;
         public static string lastMessage = "";
+        private static bool isCtemp = false;
+        private static string cTempLogFilename = String.Format("C:\\Temp\\BBjTapiClientNet.{0}.txt", DateTime.Now.Ticks);
+        private static string cTempLogFilenameMask = String.Format("C:\\Temp\\BBjTapiClientNet.*");
+        private static StreamWriter streamLogWriter;
 
         /* engine */
         public static Tapi tapi; // adapter = "atapi"
@@ -107,6 +113,12 @@ namespace BBjTapiClient
 
         public static void terminate()
         {
+            if (streamLogWriter != null)
+            {
+                streamLogWriter.Close();
+                streamLogWriter.Dispose();
+                streamLogWriter = null;
+            }
             mainWin.btnTerminate.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Send, (Action)
                 delegate ()
                 {
@@ -120,6 +132,15 @@ namespace BBjTapiClient
         /* log information */
         public static void log(String message)
         {
+            if (streamLogWriter == null && isCtemp)
+            {
+                streamLogWriter = new StreamWriter(cTempLogFilename, true, System.Text.Encoding.Default);
+            }
+            if (streamLogWriter != null)
+            {
+                streamLogWriter.WriteLine(message);
+                streamLogWriter.Flush();
+            }
             int maxVisibleLines = 512;
             if (message != lastMessage)
             {
@@ -170,16 +191,65 @@ namespace BBjTapiClient
         }
 
 
+        /*
+         * CleanUpFolder
+         */
+        private void CleanUpFolder()
+        {
+            App.log($"CleanUpFolder {cTempLogFilenameMask} and removing files older than 16 days.");
+            try
+            {
+                string[] files = Directory.GetFiles(@"C:\Temp\", "BBjTapiClientNet.*", SearchOption.TopDirectoryOnly);
+                if (files.Length > 0)
+                {
+                    foreach (var file in files)
+                    {
+                        try
+                        {
+                            FileInfo fi = new FileInfo(file);
+                            TimeSpan age = DateTime.Now.Subtract(fi.CreationTime);
+                            if (age.Days > 16)
+                            {
+                                try
+                                {
+                                    File.Delete(file);
+                                    App.log("Removing of obsolete file '" + file + "' done.");
+                                }
+                                catch (Exception ex)
+                                {
+                                    App.log("Unable to delete file '" + file + "' Exception : " + ex.Message);
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            App.log("Unable to get age of file '" + file + "' Exception : " + ex.Message);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                App.log("Unable to get files of folder 'C:/Temp/' using pattern 'BBjTapiClientNet.*'. Exception : " + ex.Message);
+            }
+        }
+
+
         /* start - process arguments */
         private void Application_Startup(object sender, StartupEventArgs e)
         {
+            isCtemp = Directory.Exists(@"C:\Temp\");
+            if (isCtemp)
+                CleanUpFolder();
+            else
+                App.log(@"C:\Temp\ does not exist. No logging will be saved in C:\Temp\. The logging is only available at runtime in the buffer of the client in this situation.");
             tapi = new Tapi();
             network = new Network();
             registry = new RegEdit();
             setup = new Settings(); // sets defaults, load setup from registry, override setup with values given by the starting args
-//#if !DEBUG
+                                    //#if !DEBUG
             registry.readAll(); // try to override the defaults with the values stored in the registry
-//#endif
+                                //#endif
             string arg, value;
             string myServer = "", myPort = "", myLine = "", myAddress = "", myExtension = "";
             string prevArg = "";
