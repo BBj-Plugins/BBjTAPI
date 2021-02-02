@@ -286,11 +286,11 @@ namespace BBjTapiClient
         /* check if BBjTapi was started in the time being / if the connection is available now */
         private void raiseTimer(object sender, ElapsedEventArgs e)
         {
-            // if (raiseAppTapiInit)
-            // {
-            //     raiseAppTapiInit = false;
-            //     App.tapi.init(); // CRITICAL - PROCESS MAY HANG - get lines -- display lines
-            // }
+            //if (raiseAppTapiInit)
+            //{
+            //    raiseAppTapiInit = false;
+            //    App.tapi.init(true); // CRITICAL - PROCESS MAY HANG - get lines -- display lines
+            //}
             if (App.isMgrInitializationPhase)
             {
                 App.mgrInitializationPhaseCounter++;
@@ -328,21 +328,23 @@ namespace BBjTapiClient
                         App.network.initialize(); // async embedded - continues before initialize call is completed - is okay here 
                     }
                     /* initialize */
-                    if (tickCounter == 2)
-                    {
-                        App.log("Reached internal counter of value 2");
-                        if (App.Setup.Line != "" && App.Setup.Address != "")
-                        {
-                            App.log("Line and Address are given");
-                            if (!App.isTapiInitRan)
-                            {
-                                App.log("Calling TAPI init()");
-                                App.tapi.init(false); // CRITICAL - may hang if configuration of phone and modem in the control panel is currently opened  (20210202)
-                            }
-                        }
-                        else
-                            App.log("Okay, not going to call TAPI init because LINE and ADDRESS aren't given yet.");
-                    }
+                    
+                    // if (tickCounter == 2)
+                    // {
+                    //     App.log("Reached internal counter of value 2");
+                    //     if (App.Setup.Line != "" && App.Setup.Address != "")
+                    //     {
+                    //         App.log("Line and Address are given");
+                    //         if (!App.isTapiInitRan)
+                    //         {
+                    //             App.log("Calling TAPI init()");
+                    //             App.tapi.init(true); // CRITICAL - may hang if configuration of phone and modem in the control panel is currently opened  (20210202)
+                    //         }
+                    //     }
+                    //     else
+                    //         App.log("Okay, not going to call TAPI init because LINE and ADDRESS aren't given yet.");
+                    // }
+
                     /* attempt to connect tapi line from time to time */
                     if (App.Setup.IsTapiSessionConnected == false && tickCounter > 0 && tickCounter % 5 == 0)
                         App.isRefreshingTapiSession = true;

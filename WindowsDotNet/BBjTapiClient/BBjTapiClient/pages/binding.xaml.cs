@@ -40,7 +40,7 @@ namespace BBjTapiClient.pages
             {
                 isSuppressAddressRefresh = isSuppressLineRefresh;
                 ComboBox cb = (ComboBox)sender;
-                App.tapi.setCurrentLine((string)cb.SelectedItem,true);
+                App.tapi.setCurrentLine((string)cb.SelectedItem);
                 App.isRefreshingTapiSession = true; // impulse for re-connecting
                 if (App.tapi.currentAddress != null)
                     Addresses.Text = App.tapi.currentAddress.Address; // refresh the address - mostly the only one available within the TAPI LINE

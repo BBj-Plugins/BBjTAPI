@@ -107,13 +107,13 @@ namespace BBjTapiClient.utils
                 if (isInFrontend)
                 {
                     if (App.Setup.Line != "")
-                        setCurrentLine(App.Setup.Line, isInFrontend);
+                        setCurrentLine(App.Setup.Line);
                     if (App.Setup.Address != "")
                         setCurrentAddress(App.Setup.Address);
                 }
                 else
                 {
-                    setCurrentLine(App.Setup.Line, isInFrontend);
+                    setCurrentLine(App.Setup.Line);
                     setCurrentAddress(App.Setup.Address);
                 }
 
@@ -126,7 +126,7 @@ namespace BBjTapiClient.utils
 
 
         /* is called when the item in the Device combobox has been changed */
-        public void setCurrentLine(string lineName, bool isFrontend)
+        public void setCurrentLine(string lineName, bool isFrontend = true)
         {
             if (lineCollection.Count() > 0)
             {
