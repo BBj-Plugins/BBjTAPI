@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:BBjTapiClient"
         xmlns:project="clr-namespace:BBjTapiClient"
         mc:Ignorable="d"
-        Title="" Height="600" Width="800" Closing="mainWin_Closing" Closed="mainWin_Closed" Loaded="mainWin_Loaded" MinWidth="800" MinHeight="600" Visibility="Hidden">
+        Title="" Height="600" Width="800" Closing="mainWin_Closing" Closed="mainWin_Closed" Loaded="mainWin_Loaded" MinWidth="800" MinHeight="600" Visibility="Visible" WindowStartupLocation="CenterScreen">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

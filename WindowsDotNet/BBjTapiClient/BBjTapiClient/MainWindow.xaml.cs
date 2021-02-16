@@ -150,7 +150,7 @@ namespace BBjTapiClient
                 e.Cancel = cancelShutDown;
             }
         }
-        
+
 
         /* triggered by close() - final cleanup activities */
         private void mainWin_Closed(object sender, EventArgs e)
@@ -188,16 +188,16 @@ namespace BBjTapiClient
                 {
                     var text = "TIMEOUT! READ CAREFULLY!" +
                         "   THE TAPI MANAGER INITIALIZATION PROCESS TAKES TOO LONG!" +
-                        "   PLEASE ENSURE A CLOSED CONFIGURATION OF THE TELEPHONY SERVICE PROVIDER MAINTENANCE!" +
-                        "   MEANS, IF YOU HAVE OPENED THE WINDOWS SYSTEM CONTROL PANEL BEFORE AND HAVE MOVED TO PHONE AND MODEM" +
-                        " DETAILS, YOU HAVE TO CLOSE THEM."+
-                        "   DO DESTROY THIS TAPI CLIENT NOW!   RESTART IT AFTER THE UPPER INSTRUCTIONS HAVE BEEN FOLLOWED!";
+                        "   PLEASE ENSURE A CLOSED CONFIGURATION OF THE TELEPHONY SERVICE PROVIDER MAINTENANCE IN YOUR WINDOWS OPERATING SYSTEM ENVIRONMENT!" +
+                        "   MEANS, IF YOU HAVE OPENED THE WINDOWS SYSTEM CONTROL PANEL OVERVIEW TO CONCRETE CHECK THE PHONE AND MODEM" +
+                        " DETAILS, THEN CLOSE IT! THE OPENED TAPI DETAILS ARE PREVENTING THIS APPLICATION FROM CONSUMING THE WINDOWS TAPI SETTINGS!" +
+                        "   DO NOW DESTROY THIS TAPI BBJ CLIENT!   RESTART THE BBJ TAPI CLIENT AFTER CLOSING ALL WINDOWS CONTROL PANEL TAPI OPTIONS (PHONE AND MODEM)!";
                     System.Windows.MessageBox.Show(text);
                     App.terminate();
                 }
             }
             else
-            { 
+            {
                 try
                 {
                     Close();
@@ -211,7 +211,7 @@ namespace BBjTapiClient
         #endregion
 
         #region miscellaneous 
-        
+
         /* tray icon balloon tip */
         public void showBalloonTip(string text)
         {
@@ -253,7 +253,7 @@ namespace BBjTapiClient
         /* if the app run silently in the background as usual - this method won't be called */
         private void mainWin_Loaded(object sender, RoutedEventArgs e)
         {
-            App.tapi.init(); // CRITICAL
+            App.tapi.init(true); // CRITICAL
             //raiseAppTapiInit = true; // execute App.tapi.init() in the time to ensure an displayed window!
         }
 
@@ -286,15 +286,15 @@ namespace BBjTapiClient
         /* check if BBjTapi was started in the time being / if the connection is available now */
         private void raiseTimer(object sender, ElapsedEventArgs e)
         {
-            // if (raiseAppTapiInit)
-            // {
-            //     raiseAppTapiInit = false;
-            //     App.tapi.init(); // CRITICAL - PROCESS MAY HANG - get lines -- display lines
-            // }
+            //if (raiseAppTapiInit)
+            //{
+            //    raiseAppTapiInit = false;
+            //    App.tapi.init(true); // CRITICAL - PROCESS MAY HANG - get lines -- display lines
+            //}
             if (App.isMgrInitializationPhase)
             {
                 App.mgrInitializationPhaseCounter++;
-                if (App.mgrInitializationPhaseCounter==8)
+                if (App.mgrInitializationPhaseCounter == 8)
                 {
                     /* timeout of mgr.Initialize() */
                     App.isMgrInitializationPhase = false;
@@ -309,7 +309,7 @@ namespace BBjTapiClient
                 {
                     tickCounter++;
                     /* this program may only run once using this EXTENSION - avoid parallel processing of the same Extension */
-                    if (App.mutex==null && App.Setup.Extension!= "")
+                    if (App.mutex == null && App.Setup.Extension != "")
                     {
                         App.mutex = new System.Threading.Mutex(true, "BBjTAPIClient.Net.Extension" + App.Setup.Extension, out App.createdNewMutex);
                         /** the App.createdNewMutex should prevent from further parallel processing the same extension on the same server */
@@ -327,8 +327,26 @@ namespace BBjTapiClient
                         App.network.disconnect();
                         App.network.initialize(); // async embedded - continues before initialize call is completed - is okay here 
                     }
+                    /* initialize */
+                    
+                    // if (tickCounter == 2)
+                    // {
+                    //     App.log("Reached internal counter of value 2");
+                    //     if (App.Setup.Line != "" && App.Setup.Address != "")
+                    //     {
+                    //         App.log("Line and Address are given");
+                    //         if (!App.isTapiInitRan)
+                    //         {
+                    //             App.log("Calling TAPI init()");
+                    //             App.tapi.init(true); // CRITICAL - may hang if configuration of phone and modem in the control panel is currently opened  (20210202)
+                    //         }
+                    //     }
+                    //     else
+                    //         App.log("Okay, not going to call TAPI init because LINE and ADDRESS aren't given yet.");
+                    // }
+
                     /* attempt to connect tapi line from time to time */
-                        if (App.Setup.IsTapiSessionConnected == false && tickCounter>0 && tickCounter % 5 == 0)
+                    if (App.Setup.IsTapiSessionConnected == false && tickCounter > 0 && tickCounter % 5 == 0)
                         App.isRefreshingTapiSession = true;
                     /* refresh tapi line session */
                     if (App.isRefreshingTapiSession)

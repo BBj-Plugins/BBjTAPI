@@ -101,7 +101,7 @@ namespace BBjTapiClient.utils
                 if (value != "")
                 {
                     App.Setup.Line = value;
-                    App.log(String.Format("Read Line '{0}' from registry", value));
+                    App.log(String.Format("Read the major Line/Device '{0}' from registry", value));
                     exi = true;
                 }
 
@@ -109,7 +109,7 @@ namespace BBjTapiClient.utils
                 if (value != "")
                 {
                     App.Setup.Address = value;
-                    App.log(String.Format("Read Address '{0}' from registry", value));
+                    App.log(String.Format("Read the minor Address '{0}' of the Line/Device from registry", value));
                     exi = true;
                 }
 
@@ -117,7 +117,7 @@ namespace BBjTapiClient.utils
                 if (value != "")
                 {
                     App.Setup.Extension = value;
-                    App.log(String.Format("Read Extension '{0}' from registry", value));
+                    App.log(String.Format("Read collaborating BBj Extension '{0}' from registry", value));
                     exi = true;
                 }
 
@@ -125,7 +125,7 @@ namespace BBjTapiClient.utils
                 if (value != "")
                 {
                     App.Setup.Server = value;
-                    App.log(String.Format("Read Host '{0}' from registry", value));
+                    App.log(String.Format("Read BBjTapi.bbj bound Host '{0}' from registry", value));
                     exi = true;
                 }
 
@@ -133,7 +133,7 @@ namespace BBjTapiClient.utils
                 if (value != "")
                 {
                     App.Setup.Port = value;
-                    App.log(String.Format("Read Port '{0}' from registry", value));
+                    App.log(String.Format("Read BBjTapi.bbj bound Port '{0}' from registry", value));
                     exi = true;
                 }
                 if (exi)
