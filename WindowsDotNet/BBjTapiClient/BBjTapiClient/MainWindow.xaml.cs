@@ -1,22 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+// using System.Collections.Generic;
+// using System.Linq;
+// using System.Text;
+// using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-
+//using System.Windows.Controls;
+//using System.Windows.Data;
+//using System.Windows.Documents;
+//using System.Windows.Input;
+//using System.Windows.Media;
+//using System.Windows.Media.Imaging;
+//using System.Windows.Navigation;
+//using System.Windows.Shapes;
 using System.Windows.Forms;
-using System.Drawing.Imaging;
+//using System.Drawing.Imaging;
 using System.Timers;
-using System.Threading;
+//using System.Threading;
 using JulMar.Atapi;
 using System.Reflection;
 
@@ -283,18 +282,14 @@ namespace BBjTapiClient
         }
 
 
-        /* check if BBjTapi was started in the time being / if the connection is available now */
+        /* check if BBjTapi was started in the time being / if the connection is available now / this timer event is raised every 2 seconds */
         private void raiseTimer(object sender, ElapsedEventArgs e)
         {
-            //if (raiseAppTapiInit)
-            //{
-            //    raiseAppTapiInit = false;
-            //    App.tapi.init(true); // CRITICAL - PROCESS MAY HANG - get lines -- display lines
-            //}
             if (App.isMgrInitializationPhase)
             {
-                App.mgrInitializationPhaseCounter++;
-                if (App.mgrInitializationPhaseCounter == 8)
+                App.mgrInitializationPhaseCounter++; // +1 for each 2 seconds
+                /* due to AVAYA TAPI compatibility increase the timeout from 8x2 seconds to 12x2 seconds */
+                if (App.mgrInitializationPhaseCounter == 12)
                 {
                     /* timeout of mgr.Initialize() */
                     App.isMgrInitializationPhase = false;
@@ -327,24 +322,6 @@ namespace BBjTapiClient
                         App.network.disconnect();
                         App.network.initialize(); // async embedded - continues before initialize call is completed - is okay here 
                     }
-                    /* initialize */
-                    
-                    // if (tickCounter == 2)
-                    // {
-                    //     App.log("Reached internal counter of value 2");
-                    //     if (App.Setup.Line != "" && App.Setup.Address != "")
-                    //     {
-                    //         App.log("Line and Address are given");
-                    //         if (!App.isTapiInitRan)
-                    //         {
-                    //             App.log("Calling TAPI init()");
-                    //             App.tapi.init(true); // CRITICAL - may hang if configuration of phone and modem in the control panel is currently opened  (20210202)
-                    //         }
-                    //     }
-                    //     else
-                    //         App.log("Okay, not going to call TAPI init because LINE and ADDRESS aren't given yet.");
-                    // }
-
                     /* attempt to connect tapi line from time to time */
                     if (App.Setup.IsTapiSessionConnected == false && tickCounter > 0 && tickCounter % 5 == 0)
                         App.isRefreshingTapiSession = true;

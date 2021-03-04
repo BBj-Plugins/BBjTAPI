@@ -72,10 +72,6 @@ namespace BBjTapiClient
         public static bool isMgrInitializationPhase = false;
         public static int mgrInitializationPhaseCounter = 0;
 
-        /* termination flag retrieved from BBjTapi.bbj for instance */
-        /* This might be true if the admin shuts down remotly all active BBjTapiCientNet.exe Clients */
-        //public static bool terminationFlag = false;
-
         /* open a page */
         public static void displayPage(string pageName)
         {
