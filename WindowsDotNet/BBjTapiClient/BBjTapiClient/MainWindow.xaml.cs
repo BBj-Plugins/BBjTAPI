@@ -1,21 +1,7 @@
 ﻿using System;
-// using System.Collections.Generic;
-// using System.Linq;
-// using System.Text;
-// using System.Threading.Tasks;
 using System.Windows;
-//using System.Windows.Controls;
-//using System.Windows.Data;
-//using System.Windows.Documents;
-//using System.Windows.Input;
-//using System.Windows.Media;
-//using System.Windows.Media.Imaging;
-//using System.Windows.Navigation;
-//using System.Windows.Shapes;
 using System.Windows.Forms;
-//using System.Drawing.Imaging;
 using System.Timers;
-//using System.Threading;
 using JulMar.Atapi;
 using System.Reflection;
 
@@ -289,7 +275,7 @@ namespace BBjTapiClient
             {
                 App.mgrInitializationPhaseCounter++; // +1 for each 2 seconds
                 /* due to AVAYA TAPI compatibility increase the timeout from 8x2 seconds to 12x2 seconds */
-                if (App.mgrInitializationPhaseCounter == 12)
+                if (App.mgrInitializationPhaseCounter == 14)
                 {
                     /* timeout of mgr.Initialize() */
                     App.isMgrInitializationPhase = false;

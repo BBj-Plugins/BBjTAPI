@@ -242,6 +242,7 @@ namespace BBjTapiClient
             tapi = new Tapi();
             network = new Network();
             registry = new RegEdit();
+
             setup = new Settings(); // sets defaults, load setup from registry, override setup with values given by the starting args
                                     //#if !DEBUG
             registry.readAll(); // try to override the defaults with the values stored in the registry
@@ -332,8 +333,15 @@ namespace BBjTapiClient
                 }
                 if (myServer != "")
                 {
-                    App.Setup.Server = myServer;
-                    App.log($"Using Start-Argument -S of value '{myServer}'. This is the BBjTapi.bbj bound Host Address.");
+                    if (myServer != "localhost")
+                    {
+                        App.Setup.Server = myServer;
+                        App.log($"Using Start-Argument -S of value '{myServer}'. This is the BBjTapi.bbj bound Host Address.");
+                    }
+                    else
+                    {
+                        App.log($"Ignoring Start-Argument -S of value '{myServer}' foreseen for the BBjTapi.bbj binding, because it's the default. Keeping an optional deviant address read from registry.");
+                    }
                 }
                 if (myPort != "")
                 {
