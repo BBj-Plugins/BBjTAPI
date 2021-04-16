@@ -70,7 +70,6 @@ namespace BBjTapiClient.viewmodels
                     App.network.disconnect();
                     App.network.initialize(); // method code continues before call is completed - is okay here
                 }
-
             }
         }
 
