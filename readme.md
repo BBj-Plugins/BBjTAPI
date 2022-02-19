@@ -11,13 +11,14 @@ The plug-in could be, but is not yet, adopted to Asterisk-based SIP VOIP systems
 The Plug-in comes as a BBj background progrsam that dispatches incoming and outgoing calls, a BBj class that allows the developer to make calls and to register for incoming calls on a specific extension, and a Windows executable that links the Windows TAPI driver on a Windows desktop with the BBj background service / dispatcher.
 
 The Windows executable features the following Command Line Options:
--S"<server>" 
--P<port> 
--E<extension> 
--D"TAPI Device Name" 
--A"TAPI Line Name" 
--debug"<debugfilename>"
-
+```
+  -S<server>
+  -P<port>
+  -E<extension>
+  -D<TAPI Device Name>
+  -A<TAPI Line Name>
+  -debug<debugfilename>
+```
   
 
  
